@@ -1,0 +1,158 @@
+name: ptc-railway
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ptc-postgres
+    environment:
+      POSTGRES_USER: ptc
+      POSTGRES_PASSWORD: ptc_railway
+      POSTGRES_DB: ptc
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ptc-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ptc -d ptc"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+    networks:
+      - railway-net
+
+  track:
+    build:
+      context: .
+      dockerfile: services/track/Dockerfile
+    container_name: ptc-track
+    environment: &backend
+      DATABASE_URL: postgresql://ptc:ptc_railway@postgres:5432/ptc
+      TRACK_ADDR: track:50052
+      BRAKING_ADDR: braking:50053
+      TELEMETRY_ADDR: telemetry:50054
+      DISPATCH_ADDR: dispatch:50055
+      SIMULATION_ADDR: simulation:50051
+      TICK_SECONDS: "1.0"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "50052:50052"
+    healthcheck: &grpc-health
+      test: ["CMD", "python", "-c", "import os,socket; p=int(os.environ['PORT']); s=socket.create_connection(('127.0.0.1', p), 2); s.close()"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
+    networks:
+      - railway-net
+
+  braking:
+    build:
+      context: .
+      dockerfile: services/braking/Dockerfile
+    container_name: ptc-braking
+    environment: *backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "50053:50053"
+    healthcheck: *grpc-health
+    networks:
+      - railway-net
+
+  telemetry:
+    build:
+      context: .
+      dockerfile: services/telemetry/Dockerfile
+    container_name: ptc-telemetry
+    environment: *backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "50054:50054"
+    healthcheck: *grpc-health
+    networks:
+      - railway-net
+
+  simulation:
+    build:
+      context: .
+      dockerfile: services/simulation/Dockerfile
+    container_name: ptc-simulation
+    environment: *backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      track:
+        condition: service_healthy
+      braking:
+        condition: service_healthy
+      telemetry:
+        condition: service_healthy
+    ports:
+      - "50051:50051"
+    healthcheck: *grpc-health
+    networks:
+      - railway-net
+
+  dispatch:
+    build:
+      context: .
+      dockerfile: services/dispatch/Dockerfile
+    container_name: ptc-dispatch
+    environment: *backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      track:
+        condition: service_healthy
+      telemetry:
+        condition: service_healthy
+      simulation:
+        condition: service_healthy
+    ports:
+      - "50055:50055"
+    healthcheck: *grpc-health
+    networks:
+      - railway-net
+
+  envoy:
+    image: envoyproxy/envoy:v1.32.3
+    container_name: ptc-envoy
+    command: ["envoy", "-c", "/etc/envoy/envoy.yaml", "--log-level", "info"]
+    volumes:
+      - ./envoy/envoy.yaml:/etc/envoy/envoy.yaml:ro
+    ports:
+      - "8080:8080"
+      - "9901:9901"
+    depends_on:
+      - telemetry
+      - dispatch
+      - simulation
+      - track
+      - braking
+    networks:
+      - railway-net
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: ptc-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - envoy
+    networks:
+      - railway-net
+
+networks:
+  railway-net:
+    name: railway-net
+
+volumes:
+  ptc-data:

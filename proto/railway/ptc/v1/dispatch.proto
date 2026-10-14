@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package railway.ptc.v1;
+
+import "railway/ptc/v1/common.proto";
+
+// Órdenes del centro de control. Este servicio es el único punto de entrada
+// de las acciones manuales del OCC y las reenvía por gRPC interno.
+service DispatchService {
+  rpc SendDispatchCommand (DispatchCommandRequest) returns (CommandAcknowledgment);
+}

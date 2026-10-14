@@ -1,0 +1,125 @@
+syntax = "proto3";
+
+// Contratos compartidos de la Plataforma de Telemetría y Control (PTC).
+// Los campos 1..N de TrainTelemetryInput, ControlCommandOutput,
+// DispatchCommandRequest, CommandAcknowledgment, TrainInfo y BlockInfo
+// conservan la numeración del caso de estudio.
+package railway.ptc.v1;
+
+message EmptyRequest {}
+
+// Telemetría que el simulador envía al motor de frenado.
+message TrainTelemetryInput {
+  string train_id = 1;
+  double latitude = 2;
+  double longitude = 3;
+  double speed_kmh = 4;
+  double current_braking_distance = 5;
+  string current_block_id = 6;
+  int64 timestamp = 7;
+  double position_m = 8;
+  double adhesion_factor = 9;
+  double mass_kg = 10;
+  int64 sequence = 11;
+  double cruise_speed_kmh = 12;
+  double max_decel_mps2 = 13;
+}
+
+// Orden de señalización devuelta por el flujo bidireccional.
+message ControlCommandOutput {
+  string train_id = 1;
+  enum SignalStatus {
+    PROCEED = 0;
+    CAUTION = 1;
+    STOP = 2;
+    EMERGENCY_BRAKE = 3;
+  }
+  SignalStatus signal = 2;
+  string message = 3;
+  int64 timestamp = 4;
+  int64 sequence = 5;
+  double braking_distance_m = 6;
+  double distance_to_hazard_m = 7;
+  double target_speed_kmh = 8;
+  string hazard_block_id = 9;
+}
+
+message TrainInfo {
+  string train_id = 1;
+  double speed = 2;
+  string block_id = 3;
+  string status = 4;
+  string name = 5;
+  double latitude = 6;
+  double longitude = 7;
+  double position_m = 8;
+  string signal = 9;
+  double braking_distance_m = 10;
+  double adhesion_factor = 11;
+  bool manual_hold = 12;
+  string kind = 13;
+  double distance_to_hazard_m = 14;
+}
+
+message BlockInfo {
+  string block_id = 1;
+  bool is_occupied = 2;
+  string occupied_by_train_id = 3;
+  string status = 4;
+  string line_id = 5;
+  int32 sequence = 6;
+  string signal_aspect = 7;
+  double grade_percent = 8;
+  double length_m = 9;
+  string switch_position = 10;
+  double latitude_start = 11;
+  double longitude_start = 12;
+  double latitude_end = 13;
+  double longitude_end = 14;
+}
+
+message SafetyEvent {
+  int64 id = 1;
+  string train_id = 2;
+  string block_id = 3;
+  string event_type = 4;
+  string severity = 5;
+  string message = 6;
+  int64 timestamp = 7;
+}
+
+message CommandRecord {
+  int64 id = 1;
+  string train_id = 2;
+  string command_type = 3;
+  string operator_id = 4;
+  string status = 5;
+  string details = 6;
+  int64 timestamp = 7;
+  string target_id = 8;
+}
+
+message RailroadStateResponse {
+  repeated TrainInfo trains = 1;
+  repeated BlockInfo blocks = 2;
+  int64 tick = 3;
+  int64 timestamp = 4;
+  repeated SafetyEvent events = 5;
+  repeated CommandRecord commands = 6;
+  string weather = 7;
+  bool simulation_running = 8;
+}
+
+message DispatchCommandRequest {
+  string train_id = 1;
+  string command_type = 2;
+  string operator_id = 3;
+  string target_id = 4;
+  double parameter = 5;
+}
+
+message CommandAcknowledgment {
+  bool success = 1;
+  string details = 2;
+  int64 command_id = 3;
+}

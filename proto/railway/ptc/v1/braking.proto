@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package railway.ptc.v1;
+
+import "railway/ptc/v1/common.proto";
+
+// Motor de curvas de frenado. El lazo de seguridad es un stream bidireccional:
+// el simulador envía telemetría y recibe la señal de protección en el mismo RPC.
+service BrakingService {
+  rpc CalculateBrakingCurve (TrainTelemetryInput) returns (ControlCommandOutput);
+  rpc StreamTelemetryAndControl (stream TrainTelemetryInput) returns (stream ControlCommandOutput);
+}

@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package railway.ptc.v1;
+
+import "railway/ptc/v1/common.proto";
+
+// Ingesta transaccional de telemetría y proyección de estado para el OCC.
+service TelemetryService {
+  rpc IngestBatch (IngestBatchRequest) returns (IngestAck);
+  rpc RecordSafetyEvent (SafetyEvent) returns (IngestAck);
+  rpc GetRailroadState (EmptyRequest) returns (RailroadStateResponse);
+  rpc StreamRailroadState (EmptyRequest) returns (stream RailroadStateResponse);
+}
+
+message TelemetrySample {
+  string train_id = 1;
+  string block_id = 2;
+  double latitude = 3;
+  double longitude = 4;
+  double speed_kmh = 5;
+  double braking_distance_m = 6;
+  double acceleration_mps2 = 7;
+  int64 timestamp = 8;
+  string signal = 9;
+  double distance_to_hazard_m = 10;
+}
+
+message IngestBatchRequest {
+  repeated TelemetrySample samples = 1;
+}
+
+message IngestAck {
+  bool success = 1;
+  int32 stored = 2;
+  string details = 3;
+}

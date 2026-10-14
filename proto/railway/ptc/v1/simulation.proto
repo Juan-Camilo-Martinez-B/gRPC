@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package railway.ptc.v1;
+
+import "railway/ptc/v1/common.proto";
+
+// Control del motor estocástico. El bucle de ticks es interno; estas RPC
+// permiten inyectar anomalías y consultar el reloj de simulación.
+service SimulationService {
+  rpc InjectAnomaly (InjectAnomalyRequest) returns (CommandAcknowledgment);
+  rpc GetSimulationStatus (EmptyRequest) returns (SimulationStatus);
+}
+
+message InjectAnomalyRequest {
+  string kind = 1;
+  string train_id = 2;
+  double adhesion_factor = 3;
+  int32 duration_seconds = 4;
+  string operator_id = 5;
+}
+
+message SimulationStatus {
+  int64 tick = 1;
+  bool running = 2;
+  string weather = 3;
+  int32 train_count = 4;
+}

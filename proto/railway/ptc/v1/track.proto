@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package railway.ptc.v1;
+
+import "railway/ptc/v1/common.proto";
+
+// Gestión de la infraestructura: ocupación, enclavamientos y agujas.
+service TrackService {
+  rpc ListBlocks (EmptyRequest) returns (BlockList);
+  rpc OccupyBlock (OccupyBlockRequest) returns (OccupyBlockResponse);
+  rpc SetBlockStatus (SetBlockStatusRequest) returns (CommandAcknowledgment);
+  rpc SetSwitch (SetSwitchRequest) returns (CommandAcknowledgment);
+}
+
+message BlockList {
+  repeated BlockInfo blocks = 1;
+}
+
+message OccupyBlockRequest {
+  string train_id = 1;
+  string block_id = 2;
+  double entry_position_m = 3;
+  double speed_kmh = 4;
+}
+
+message OccupyBlockResponse {
+  bool granted = 1;
+  string details = 2;
+  BlockInfo block = 3;
+}
+
+message SetBlockStatusRequest {
+  string block_id = 1;
+  string status = 2;
+  int32 hold_seconds = 3;
+  string reason = 4;
+}
+
+message SetSwitchRequest {
+  string block_id = 1;
+  string position = 2;
+  string operator_id = 3;
+}
