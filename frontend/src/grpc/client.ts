@@ -279,6 +279,12 @@ async function* streamFrames(body: ReadableStream<Uint8Array>): AsyncGenerator<F
   }
 }
 
+function requestBody(bytes: Uint8Array): ArrayBuffer {
+  const buffer = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(buffer).set(bytes);
+  return buffer;
+}
+
 async function grpcPost(path: string, body: Uint8Array, signal?: AbortSignal): Promise<Response> {
   const response = await fetch(`${endpoint}${path}`, {
     method: "POST",
@@ -288,7 +294,7 @@ async function grpcPost(path: string, body: Uint8Array, signal?: AbortSignal): P
       "X-Grpc-Web": "1",
       "X-User-Agent": "ptc-occ",
     },
-    body,
+    body: requestBody(body),
     signal,
   });
   if (!response.ok) {
