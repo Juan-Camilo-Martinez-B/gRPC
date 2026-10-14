@@ -19,7 +19,7 @@ COPY services/dispatch/app /app/services/dispatch/app
 COPY services/simulation/app /app/services/simulation/app
 COPY deploy/bootstrap.py /app/deploy/bootstrap.py
 COPY deploy/start.sh /app/deploy/start.sh
-COPY deploy/envoy.prod.yaml /etc/envoy/envoy.yaml
+COPY deploy/envoy.prod.yaml /etc/envoy/envoy.yaml.template
 
 RUN mkdir -p /app/gen \
     && python3 -m grpc_tools.protoc \
@@ -46,5 +46,5 @@ ENV PYTHONUNBUFFERED=1 \
     DB_POOL_MAX=2 \
     TICK_SECONDS=1.0
 
-EXPOSE 8080
+EXPOSE 10000
 CMD ["/app/deploy/start.sh"]

@@ -1,6 +1,19 @@
 #!/bin/sh
 set -eu
 
+python3 - <<'PY'
+from pathlib import Path
+import os
+
+template = Path("/etc/envoy/envoy.yaml.template").read_text()
+rendered = template.replace("__LISTEN_PORT__", os.environ.get("PORT", "8080"))
+rendered = rendered.replace(
+    "__CORS_ORIGIN__",
+    os.environ.get("CORS_ORIGIN", "https://g-rpc-one.vercel.app"),
+)
+Path("/etc/envoy/envoy.yaml").write_text(rendered)
+PY
+
 python3 /app/deploy/bootstrap.py
 
 start_service() {

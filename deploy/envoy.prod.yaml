@@ -12,7 +12,7 @@ static_resources:
       address:
         socket_address:
           address: 0.0.0.0
-          port_value: 8080
+          port_value: __LISTEN_PORT__
       filter_chains:
         - filters:
             - name: envoy.filters.network.http_connection_manager
@@ -27,8 +27,9 @@ static_resources:
                       domains: ["*"]
                       cors:
                         allow_origin_string_match:
+                          - exact: "__CORS_ORIGIN__"
                           - safe_regex:
-                              regex: ".*"
+                              regex: "https://g-rpc-one(-[a-z0-9-]+)?\\.vercel\\.app"
                         allow_methods: GET, POST, OPTIONS
                         allow_headers: keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,grpc-timeout,x-grpc-web,x-user-agent,grpc-encoding,grpc-accept-encoding,authorization
                         expose_headers: grpc-status,grpc-message,grpc-status-details-bin

@@ -1,0 +1,26 @@
+# Un solo servicio web: simulación, vía, frenado, telemetría, despacho y Envoy.
+# Render habla IPv4. DATABASE_URL tiene que ser el pooler de sesión (puerto 5432),
+# no el host directo db.<ref>.supabase.co (solo IPv6 en el plan gratuito)
+# ni el pooler de transacción (puerto 6543), porque LISTEN no funciona ahí.
+# postgresql://postgres.<ref>:<password>@aws-0-us-east-2.pooler.supabase.com:5432/postgres?sslmode=require
+services:
+  - type: web
+    name: ptc-grpc
+    runtime: docker
+    plan: free
+    region: ohio
+    branch: main
+    dockerfilePath: ./deploy/Dockerfile
+    dockerContext: .
+    healthCheckPath: /healthz
+    autoDeployTrigger: commit
+    numInstances: 1
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: DB_POOL_MAX
+        value: "2"
+      - key: TICK_SECONDS
+        value: "1.0"
+      - key: CORS_ORIGIN
+        value: https://g-rpc-one.vercel.app
