@@ -12,7 +12,8 @@ RUN pip install --no-cache-dir -r /tmp/requirements.txt
 COPY proto /proto
 COPY shared/python/ptc_common /app/ptc_common
 
-RUN python -m grpc_tools.protoc \
+RUN mkdir -p /app/gen \
+    && python -m grpc_tools.protoc \
       -I /proto \
       --python_out=/app/gen \
       --grpc_python_out=/app/gen \

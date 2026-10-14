@@ -31,7 +31,8 @@ static_resources:
                       domains: ["*"]
                       cors:
                         allow_origin_string_match:
-                          - prefix: ""
+                          - safe_regex:
+                              regex: ".*"
                         allow_methods: GET, POST, OPTIONS
                         allow_headers: keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,grpc-timeout,x-grpc-web,x-user-agent,grpc-encoding,grpc-accept-encoding,authorization
                         expose_headers: grpc-status,grpc-message,grpc-status-details-bin
