@@ -7,7 +7,9 @@ RUN apt-get update \
 
 WORKDIR /app
 COPY services/requirements.txt /tmp/requirements.txt
-RUN python3 -m pip install --no-cache-dir --break-system-packages -r /tmp/requirements.txt
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 COPY proto /proto
 COPY shared/python /app/shared/python
