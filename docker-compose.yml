@@ -27,7 +27,8 @@ services:
       dockerfile: services/track/Dockerfile
     container_name: ptc-track
     environment: &backend
-      DATABASE_URL: postgresql://ptc:ptc_railway@postgres:5432/ptc
+      DATABASE_URL: ${DATABASE_URL:-postgresql://ptc:ptc_railway@postgres:5432/ptc}
+      DB_POOL_MAX: ${DB_POOL_MAX:-4}
       TRACK_ADDR: track:50052
       BRAKING_ADDR: braking:50053
       TELEMETRY_ADDR: telemetry:50054

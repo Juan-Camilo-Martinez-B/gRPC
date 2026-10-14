@@ -3,6 +3,8 @@ WORKDIR /src
 COPY frontend/package.json ./
 RUN npm install
 COPY frontend/ ./
+ARG VITE_GRPC_WEB_URL=http://localhost:8080
+ENV VITE_GRPC_WEB_URL=$VITE_GRPC_WEB_URL
 RUN npm run build
 
 FROM nginx:1.27-alpine

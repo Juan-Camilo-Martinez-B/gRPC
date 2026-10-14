@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import time
 from contextlib import contextmanager
 from typing import Iterator
@@ -32,13 +33,15 @@ class Database:
 
     def __init__(self, url: str, application_name: str) -> None:
         self.url = url
+        pool_max = max(1, int(os.environ.get("DB_POOL_MAX", "4")))
         self.pool = ConnectionPool(
             url,
             min_size=1,
-            max_size=8,
+            max_size=pool_max,
             kwargs={
                 "row_factory": dict_row,
                 "application_name": application_name,
+                "prepare_threshold": None,
             },
             open=True,
         )

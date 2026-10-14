@@ -279,6 +279,13 @@ async function* streamFrames(body: ReadableStream<Uint8Array>): AsyncGenerator<F
   }
 }
 
+function grpcFrame(payload: Uint8Array): Uint8Array {
+  const frame = new Uint8Array(5 + payload.byteLength);
+  new DataView(frame.buffer).setUint32(1, payload.byteLength, false);
+  frame.set(payload, 5);
+  return frame;
+}
+
 function requestBody(bytes: Uint8Array): ArrayBuffer {
   const buffer = new ArrayBuffer(bytes.byteLength);
   new Uint8Array(buffer).set(bytes);
@@ -294,7 +301,7 @@ async function grpcPost(path: string, body: Uint8Array, signal?: AbortSignal): P
       "X-Grpc-Web": "1",
       "X-User-Agent": "ptc-occ",
     },
-    body: requestBody(body),
+    body: requestBody(grpcFrame(body)),
     signal,
   });
   if (!response.ok) {
