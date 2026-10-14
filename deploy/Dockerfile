@@ -49,4 +49,6 @@ ENV PYTHONUNBUFFERED=1 \
     TICK_SECONDS=1.0
 
 EXPOSE 10000
+USER root
+ENTRYPOINT []
 CMD ["/app/deploy/start.sh"]

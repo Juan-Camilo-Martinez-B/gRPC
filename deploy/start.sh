@@ -11,7 +11,7 @@ rendered = rendered.replace(
     "__CORS_ORIGIN__",
     os.environ.get("CORS_ORIGIN", "https://g-rpc-one.vercel.app"),
 )
-Path("/etc/envoy/envoy.yaml").write_text(rendered)
+Path("/tmp/envoy.yaml").write_text(rendered)
 PY
 
 python3 /app/deploy/bootstrap.py
@@ -34,4 +34,4 @@ start_service /app/services/dispatch 50055 ptc-dispatch
 
 trap 'kill $(jobs -p) 2>/dev/null || true' INT TERM
 
-exec envoy -c /etc/envoy/envoy.yaml --log-level info
+exec envoy -c /tmp/envoy.yaml --log-level info
